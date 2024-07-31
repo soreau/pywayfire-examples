@@ -1,5 +1,6 @@
 from wayfire.ipc import WayfireSocket 
 from wayfire.extra.ipc_utils import WayfireUtils
+import itertools 
 
 sock = WayfireSocket()
 utils = WayfireUtils(sock)
@@ -7,16 +8,12 @@ utils = WayfireUtils(sock)
 def get_previous_item(lst, current):
     if not lst:
         return None
-    current_coords = (current['x'], current['y'])
-    coords_list = [(item['x'], item['y']) for item in lst]
-    if current_coords not in coords_list:
-        return None
-    current_index = coords_list.index(current_coords)
-    previous_index = (current_index - 1) % len(coords_list)
-    previous_coords = coords_list[previous_index]
-    for item in lst:
-        if (item['x'], item['y']) == previous_coords:
-            return item
+    cyclic_lst = itertools.cycle(lst)
+    previous = None
+    for item in cyclic_lst:
+        if (item['x'], item['y']) == (current['x'], current['y']):
+            return previous
+        previous = item
 
 def remove_repeated_coordinates(lst):
     seen_coordinates = set()
