@@ -1,7 +1,9 @@
 from wayfire import WayfireSocket
 from wayfire.extra.ipc_utils import WayfireUtils
+import itertools
 sock = WayfireSocket()
 utils = WayfireUtils(sock)
+
 
 def go_previous_workspace():
         grid_info = utils.get_active_workspace_info()
