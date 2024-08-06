@@ -22,7 +22,6 @@ def window_rules(view):
 while True:
     msg = rule.read_message()
     if "event" in msg and "view" in msg:
-        print(msg)
         view = msg["view"]
         if view:
             window_rules(view)
