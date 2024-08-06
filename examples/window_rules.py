@@ -1,5 +1,5 @@
-from wayfire import Wayfireruleet
-rule = Wayfireruleet()
+from wayfire import WayfireSocket
+rule = WayfireSocket()
 rule.watch()
 
 view = None
