@@ -1,16 +1,14 @@
 from wayfire import WayfireSocket
 sock = WayfireSocket()
-
+s = WayfireSocket()
 plugins = sock.get_option_value("core/plugins")["value"]
 plugin_name_to_disable = "pixdecor"
 
 def disable_plugin(plugin_name):
     p = " ".join([i for i in plugins.split() if plugin_name not in i])
-    s = WayfireSocket()
     s.set_option_values({"core/plugins":p})
 
 def enable_plugin():
-    s = WayfireSocket()
     s.set_option_values({"core/plugins":plugins})
 
 
