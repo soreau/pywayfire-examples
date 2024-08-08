@@ -3,7 +3,6 @@ from wayfire.extra.wpe import WPE
 
 sock = WayfireSocket()
 wpe = WPE(sock)
-shader_path = "/path/to/border"
 
 
 border = """#version 300 es
