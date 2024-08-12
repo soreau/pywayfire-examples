@@ -32,7 +32,7 @@ def unset_view_shaders():
     for view in sock.list_views():
         wpe.filters_unset_view_shader(view["id"])
 
-
+last_focused_view = None 
 while True:
     try:
         msg = sock.read_next_event()
@@ -41,8 +41,13 @@ while True:
                 continue
             unset_view_shaders()
             focused_view = sock.get_focused_view()
+            if last_focused_view is None:
+                last_focused_view = focused_view["id"]
             if focused_view:
-                wpe.filters_set_view_shader(focused_view["id"], shader_path)
+                if focused_view["id"] != last_focused_view:
+                    wpe.filters_set_view_shader(focused_view["id"], shader_path)
+                    wpe.filters_unset_view_shader(last_focused_view)
+                    last_focused_view = focused_view["id"]
     except KeyboardInterrupt:
         unset_view_shaders()
         sys.exit(0)
