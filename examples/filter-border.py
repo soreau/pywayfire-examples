@@ -21,7 +21,7 @@ void main()
     ivec2 size = textureSize(in_tex, 0);
     vec2 texelSize = 1.0 / vec2(size);
     vec4 border_color = vec4(0.0, 1.0, 0.0, 1.0);
-    float border_size = 2.0;
+    float border_size = 4.0;
     float corner_radius = 10.0;
     float d;
     // Sides
