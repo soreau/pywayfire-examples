@@ -25,7 +25,7 @@ sock.watch(['view-focused'])
 def has_workspace_single_view():
     views_ac = utils.get_views_from_active_workspace()
     views_ac = [sock.get_view(view_id) for view_id in views_ac]
-    toplevel_views = [view for view in views_ac if view["role"] == "toplevel" and view["mapped"]]
+    toplevel_views = [view for view in views_ac if view and view["role"] == "toplevel" and view["mapped"]]
     return len(toplevel_views) == 1
 
 def unset_view_shaders():
