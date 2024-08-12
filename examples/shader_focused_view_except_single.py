@@ -10,12 +10,18 @@ from wayfire import WayfireSocket
 from wayfire.extra.wpe import WPE
 from wayfire.extra.ipc_utils import WayfireUtils
 
-
+# Set shader_path based on arguments or default file
+shader_path = None
 if len(sys.argv) != 2:
-    print(f"Usage: {sys.argv[0]} /path/to/filters/shader")
-    sys.exit(-1)
-
-shader_path = os.path.abspath(sys.argv[1])
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    shader_file = os.path.join(script_dir, "border.shader")
+    if os.path.exists(shader_file):
+        shader_path = shader_file
+    else:
+        print(f"Usage: {sys.argv[0]} /path/to/filters/shader")
+        sys.exit(-1)
+else:
+    shader_path = os.path.abspath(sys.argv[1])
 
 sock = WayfireSocket()
 wpe = WPE(sock)
@@ -32,7 +38,7 @@ def unset_view_shaders():
     for view in sock.list_views():
         wpe.filters_unset_view_shader(view["id"])
 
-last_focused_view = None 
+last_focused_view = None
 while True:
     try:
         msg = sock.read_next_event()
@@ -41,10 +47,10 @@ while True:
                 continue
             unset_view_shaders()
             focused_view = sock.get_focused_view()
-            if last_focused_view is None:
-                last_focused_view = focused_view["id"]
             if focused_view:
-                if focused_view["id"] != last_focused_view:
+                if last_focused_view is None:
+                    last_focused_view = focused_view["id"]
+                elif focused_view["id"] != last_focused_view:
                     wpe.filters_set_view_shader(focused_view["id"], shader_path)
                     wpe.filters_unset_view_shader(last_focused_view)
                     last_focused_view = focused_view["id"]
