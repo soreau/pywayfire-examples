@@ -10,6 +10,7 @@ from wayfire import WayfireSocket
 from wayfire.extra.wpe import WPE
 from wayfire.extra.ipc_utils import WayfireUtils
 
+
 if len(sys.argv) != 2:
     print(f"Usage: {sys.argv[0]} /path/to/filters/shader")
     sys.exit(-1)
@@ -41,7 +42,7 @@ while True:
             unset_view_shaders()
             focused_view = sock.get_focused_view()
             if focused_view:
-                wpe.filters_set_view_shader(focused_view["id"], "/home/neo/border")
+                wpe.filters_set_view_shader(focused_view["id"], shader_path)
     except KeyboardInterrupt:
         unset_view_shaders()
         sys.exit(0)
