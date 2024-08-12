@@ -45,10 +45,9 @@ while True:
         if "event" in msg:
             if has_workspace_single_view():
                 continue
-            unset_view_shaders()
             focused_view = sock.get_focused_view()
             if focused_view:
-                if focused_view["role"] != "toplevel" and focused_view["mapped"] is False:
+                if focused_view["role"] != "toplevel" or focused_view["mapped"] is False:
                     continue
                 if last_focused_view is None:
                     last_focused_view = focused_view["id"]
@@ -56,6 +55,7 @@ while True:
                     wpe.filters_set_view_shader(focused_view["id"], shader_path)
                     wpe.filters_unset_view_shader(last_focused_view)
                     last_focused_view = focused_view["id"]
+
     except KeyboardInterrupt:
         unset_view_shaders()
         sys.exit(0)
