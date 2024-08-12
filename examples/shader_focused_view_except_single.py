@@ -47,6 +47,8 @@ while True:
                 continue
             unset_view_shaders()
             focused_view = sock.get_focused_view()
+            if focused_view["role"] != "toplevel" and focused_view["mapped"] is False:
+                continue
             if focused_view:
                 if last_focused_view is None:
                     last_focused_view = focused_view["id"]
