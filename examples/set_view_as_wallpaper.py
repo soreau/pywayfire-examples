@@ -4,5 +4,5 @@ sock = WayfireSocket()
 wpe = WPE(sock)
 
 focused_view_id = sock.get_focused_view()["id"]
-wpe.pin_view(focused_view_id, "bottom", False, 0, 0)
+wpe.pin_view(focused_view_id, "bottom", False)
 sock.set_view_fullscreen(focused_view_id, True)
