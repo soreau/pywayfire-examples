@@ -51,7 +51,7 @@ while True:
                     continue
                 if last_focused_view is None:
                     last_focused_view = focused_view["id"]
-                elif focused_view["id"] != last_focused_view:
+                elif focused_view["id"] != last_focused_view and focused_view["layer"] == "workspace" and focused_view["fullscreen"] is False:
                     wpe.filters_set_view_shader(focused_view["id"], shader_path)
                     wpe.filters_unset_view_shader(last_focused_view)
                     last_focused_view = focused_view["id"]
