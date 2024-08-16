@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 import time
-from subprocess import Popen
 from wayfire import WayfireSocket as OriginalWayfireSocket
 from wayfire.core.template import get_msg_template
+from wayfire.extra.stipc import Stipc
 
 class WayfireSocket(OriginalWayfireSocket):
 
@@ -20,61 +20,57 @@ TERMINAL_APPID = "kitty"
 TERMINAL_CMD = "kitty"
 TERMINAL_WIDTH = 800
 TERMINAL_HEIGHT = 600
-VIEW_STICKY = True # show the terminal in all workspaces, set False to disable
-VIEW_ALWAYS_ON_TOP = True # always on top even if another view get the focus, Set False to disable
+VIEW_STICKY = True  # Show the terminal in all workspaces, set False to disable
+VIEW_ALWAYS_ON_TOP = True  # Always on top even if another view gets the focus, set False to disable
 
 sock = WayfireSocket()
-
-def find_view():
-    hidden_view = shown_view = None
-    for v in sock.list_views():
-        if v['app-id'] == TERMINAL_APPID:
-            print(v["role"])
-            if v["role"] != "toplevel":
-                hidden_view = v
-            else:
-                shown_view = v
-    return hidden_view, shown_view
+stipc = Stipc(sock)
 
 def configure_view(view, output):
-    if TERMINAL_WIDTH == 0 or TERMINAL_HEIGHT == 0:
-        return
-    wa = output['workarea']
-    geom = view['geometry']
-    x = wa['x'] + wa['width'] // 2 - geom['width'] // 2
-    y = wa['y'] + wa['height'] // 2 - geom['height'] // 2
-    sock.configure_view(view["id"], x, y, TERMINAL_WIDTH, TERMINAL_HEIGHT)
+    if TERMINAL_WIDTH and TERMINAL_HEIGHT:
+        wa = output['workarea']
+        geom = view['geometry']
+        x = wa['x'] + wa['width'] // 2 - geom['width'] // 2
+        y = wa['y'] + wa['height'] // 2 - geom['height'] // 2
+        sock.configure_view(view["id"], x, y, TERMINAL_WIDTH, TERMINAL_HEIGHT)
 
+def show_view(view):
+    '''
+    Required plugin: https://github.com/killown/wayfire-plugins/tree/main/plugins/hide-view    
+    '''
+    view_id = view["id"]
+    sock.unhide_view(view_id)
+    configure_view(view, sock.get_focused_output())
+    sock.set_view_always_on_top(view_id, VIEW_ALWAYS_ON_TOP)
 
-def show_view(hidden_view):
+def hide_view(view):
     '''
-    required plugin: https://github.com/killown/wayfire-plugins/tree/main/plugins/hide-view    
+    Required plugin: https://github.com/killown/wayfire-plugins/tree/main/plugins/hide-view    
     '''
-    id = hidden_view["id"]
-    sock.unhide_view(id)
-    configure_view(hidden_view, sock.get_focused_output())
-    sock.set_view_always_on_top(id, True)
+    view_id = view['id']
+    sock.set_view_always_on_top(view_id, False)
+    sock.hide_view(view_id)
 
-def hide_view(shown_view):
-    '''
-    required plugin: https://github.com/killown/wayfire-plugins/tree/main/plugins/hide-view    
-    '''
-    id = shown_view['id']
-    sock.set_view_always_on_top(id, False)
-    sock.hide_view(id)
-    print("trying unhide")
-   
+# Find the terminal view by app ID
+app_views = [v for v in sock.list_views() if v["app-id"] == TERMINAL_APPID]
 
-hidden_view, shown_view = find_view()
-if not shown_view and not hidden_view:
-    Popen(TERMINAL_CMD, start_new_session=True)
-    time.sleep(2)
-    hidden_view, shown_view = find_view()
-    if shown_view:
-        show_view(shown_view)
+if not app_views:
+    # No terminal view found, so start a new one
+    pid = stipc.run_cmd(TERMINAL_CMD)["pid"]
+    time.sleep(1)
+    new_views = [v for v in sock.list_views() if v["pid"] == pid]
+
+    if new_views:
+        new_view = new_views[0]
+        show_view(new_view)
     else:
         print("Failed to start new terminal!")
-elif shown_view:
-    hide_view(shown_view)
+
 else:
-    show_view(hidden_view)
+    # Terminal view found, toggle its visibility
+    view = app_views[0]
+    if view["role"] != "toplevel":
+        show_view(view)
+    else:
+        hide_view(view)
+
