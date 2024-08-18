@@ -1,12 +1,11 @@
 #!/usr/bin/python3
 
-import sys
-import subprocess
-
 # Check if pygame is installed, and install it if not
 try:
     import pygame
 except ImportError:
+    import sys
+    import subprocess
     subprocess.check_call([sys.executable, "-m", "pip", "install", "pygame"])
     import pygame
 
