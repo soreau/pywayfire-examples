@@ -23,7 +23,8 @@ class AdvancedWindowRules:
             self.rule.set_workspace({"x": 0, "y": 1}, self.id)
             self.rule.set_workspace({"x": 0, "y": 0})
 
-    def focused_view_rule(self, msg):
+    def focused_view(self, msg):
+        # when a view (Window) is focused
         focused_view = msg["view"]
         focused_view_id = focused_view["id"]
 
@@ -54,7 +55,7 @@ class AdvancedWindowRules:
         event = msg["event"]
 
         if event == "focused_view":
-            self.focused_view_rule(msg)
+            self.focused_view(msg)
         elif event == "output-gain-focus":
             self.output_gain_focus(msg)
         elif event == "plugin-activation-state-changed":
