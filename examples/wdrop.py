@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import time
+from subprocess import Popen
 from wayfire import WayfireSocket as OriginalWayfireSocket
 from wayfire.core.template import get_msg_template
 from wayfire.extra.stipc import Stipc
@@ -16,8 +17,8 @@ class WayfireSocket(OriginalWayfireSocket):
         message["data"]["view-id"] = view_id
         return self.send_json(message)
 
-TERMINAL_APPID = "kitty"
-TERMINAL_CMD = "kitty"
+TERMINAL_CMD = "wezterm"
+TERMINAL_APPID = "org.wezfurlong.wezterm"
 TERMINAL_WIDTH = 800
 TERMINAL_HEIGHT = 600
 VIEW_STICKY = True  # Show the terminal in all workspaces, set False to disable
@@ -40,7 +41,7 @@ def show_view(view):
     '''
     view_id = view["id"]
     sock.unhide_view(view_id)
-    configure_view(view, sock.get_focused_output())
+    #configure_view(view, sock.get_focused_output())
     sock.set_view_always_on_top(view_id, VIEW_ALWAYS_ON_TOP)
 
 def hide_view(view):
@@ -56,9 +57,9 @@ app_views = [v for v in sock.list_views() if v["app-id"] == TERMINAL_APPID]
 
 if not app_views:
     # No terminal view found, so start a new one
-    pid = stipc.run_cmd(TERMINAL_CMD)["pid"]
+    Popen(TERMINAL_CMD)
     time.sleep(1)
-    new_views = [v for v in sock.list_views() if v["pid"] == pid]
+    new_views = [v for v in sock.list_views() if v["id"] == TERMINAL_APPID]
 
     if new_views:
         new_view = new_views[0]
