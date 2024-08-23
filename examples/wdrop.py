@@ -3,7 +3,7 @@ import time
 from subprocess import Popen
 from wayfire import WayfireSocket as OriginalWayfireSocket
 from wayfire.core.template import get_msg_template
-from wayfire.extra.stipc import Stipc
+from wayfire.extra.ipc_utils import WayfireUtils
 
 class WayfireSocket(OriginalWayfireSocket):
 
@@ -25,7 +25,7 @@ VIEW_STICKY = True  # Show the terminal in all workspaces, set False to disable
 VIEW_ALWAYS_ON_TOP = True  # Always on top even if another view gets the focus, set False to disable
 
 sock = WayfireSocket()
-stipc = Stipc(sock)
+utils = WayfireUtils(sock)
 
 def configure_view(view, output):
     if TERMINAL_WIDTH and TERMINAL_HEIGHT:
@@ -56,11 +56,16 @@ def hide_view(view):
 app_views = [v for v in sock.list_views() if v["app-id"] == TERMINAL_APPID]
 
 if not app_views:
-    # No terminal view found, so start a new one
-    Popen(TERMINAL_CMD)
-    time.sleep(1)
-    new_views = [v for v in sock.list_views() if v["id"] == TERMINAL_APPID]
+    plugin_name = "simple-tile"
+    if utils.is_plugin_enabled(plugin_name):
+        utils.set_plugin("simple-tile", False)
+        Popen(TERMINAL_CMD)
+        time.sleep(1)
+        utils.set_plugin("simple-tile")
+    else:
+        Popen(TERMINAL_CMD)
 
+    new_views = [v for v in sock.list_views() if v["id"] == TERMINAL_APPID]
     if new_views:
         new_view = new_views[0]
         show_view(new_view)
