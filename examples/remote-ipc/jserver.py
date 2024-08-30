@@ -5,6 +5,7 @@ from wayfire import WayfireSocket
 import socket
 import struct
 import ipaddress
+import os
 
 def get_local_network_range():
     hostname = socket.gethostname()
@@ -19,7 +20,6 @@ def get_local_network_range():
 
 local_network_range = get_local_network_range()
 
-# include more ranges here
 ALLOWED_IP_RANGES = [
     local_network_range
 ]
@@ -29,8 +29,11 @@ def ip_in_allowed_range(ip):
 
 async def handle_client(websocket, path):
     client_ip = websocket.remote_address[0]
+    
+    # Check if IP validation is enabled via environment variable
+    ip_check_enabled = os.getenv('WF_IP_CHECK', 'false').lower() == 'true'
 
-    if not ip_in_allowed_range(client_ip):
+    if ip_check_enabled and not ip_in_allowed_range(client_ip):
         await websocket.close()
         return
 
@@ -56,4 +59,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
