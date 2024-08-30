@@ -1,7 +1,7 @@
 import gi
 gi.require_version('Gtk', '4.0')
 from gi.repository import Gtk, GLib
-from wayfire import WayfireSocket  # Ensure you have a correct import for WayfireSocket
+from wayfire import WayfireSocket 
 
 class WayfireEventApp(Gtk.Application):
     def __init__(self, *args, **kwargs):
