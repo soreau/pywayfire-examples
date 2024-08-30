@@ -42,7 +42,6 @@ async def handle_client(websocket, path):
         print(f"Received message: {message}")  # Debugging line
 
         try:
-            # Parse the received message as JSON
             data = json.loads(message)
             command = data.get("command")
             args = data.get("args", [])
@@ -61,11 +60,9 @@ async def handle_client(websocket, path):
                 await websocket.send(json.dumps({"error": f"{command} is not a callable method"}))
                 continue
 
-            # Ensure args are iterable
             if not isinstance(args, (list, tuple)):
                 args = [args]
 
-            # Call the method with arguments
             try:
                 result = method(*args)
                 json_result = json.dumps(result, default=str)
