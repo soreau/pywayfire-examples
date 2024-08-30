@@ -3,15 +3,30 @@ import websockets
 import json
 from wayfire import WayfireSocket
 
-async def handle_client(websocket):
-    sock = WayfireSocket()
+ALLOWED_IP_RANGES = [
+    "192.168.0.0/16",
+    "10.0.0.0/8",
+    "172.16.0.0/12"
+]
 
+def ip_in_allowed_range(ip):
+    from ipaddress import ip_address, ip_network
+    return any(ip_address(ip) in ip_network(range) for range in ALLOWED_IP_RANGES)
+
+async def handle_client(websocket, path):
+    client_ip = websocket.remote_address[0]
+
+    if not ip_in_allowed_range(client_ip):
+        await websocket.close()
+        return
+
+    sock = WayfireSocket()
     async for message in websocket:
         if hasattr(sock, message):
             method = getattr(sock, message)
             if callable(method):
                 try:
-                    result = method()  # Call the method
+                    result = method()
                     json_result = json.dumps(result, default=str)
                     await websocket.send(json_result)
                 except Exception as e:
