@@ -2,16 +2,30 @@ import asyncio
 import websockets
 import json
 from wayfire import WayfireSocket
+import socket
+import struct
+import ipaddress
 
+def get_local_network_range():
+    hostname = socket.gethostname()
+    local_ip = socket.gethostbyname(hostname)
+    netmask = '255.255.255.0'  # Assuming a common local netmask
+    ip_bin = struct.unpack('>I', socket.inet_aton(local_ip))[0]
+    netmask_bin = struct.unpack('>I', socket.inet_aton(netmask))[0]
+    network_bin = ip_bin & netmask_bin
+    network_address = socket.inet_ntoa(struct.pack('>I', network_bin))
+    cidr_prefix = bin(netmask_bin).count('1')
+    return f"{network_address}/{cidr_prefix}"
+
+local_network_range = get_local_network_range()
+
+# include more ranges here
 ALLOWED_IP_RANGES = [
-    "192.168.0.0/16",
-    "10.0.0.0/8",
-    "172.16.0.0/12"
+    local_network_range
 ]
 
 def ip_in_allowed_range(ip):
-    from ipaddress import ip_address, ip_network
-    return any(ip_address(ip) in ip_network(range) for range in ALLOWED_IP_RANGES)
+    return any(ipaddress.ip_address(ip) in ipaddress.ip_network(range) for range in ALLOWED_IP_RANGES)
 
 async def handle_client(websocket, path):
     client_ip = websocket.remote_address[0]
@@ -37,7 +51,7 @@ async def handle_client(websocket, path):
             await websocket.send(json.dumps({"error": f"Unknown command: {message}"}))
 
 async def main():
-    server = await websockets.serve(handle_client, "localhost", 8787)
+    server = await websockets.serve(handle_client, "0.0.0.0", 8787)
     await server.wait_closed()
 
 if __name__ == "__main__":
