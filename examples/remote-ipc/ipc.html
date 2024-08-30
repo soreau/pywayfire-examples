@@ -47,6 +47,15 @@
           placeholder="e.g., list_views"
         />
       </div>
+      <div class="mb-3">
+        <label for="argsInput" class="form-label">Enter Arguments (JSON format):</label>
+        <input
+          type="text"
+          class="form-control"
+          id="argsInput"
+          placeholder='e.g., ["arg1", "arg2"]'
+        />
+      </div>
       <div class="d-grid gap-2">
         <button id="sendButton" class="btn btn-primary">Send Command</button>
       </div>
@@ -57,6 +66,7 @@
       const socket = new WebSocket("ws://localhost:8787");
       const outputDiv = document.getElementById("output");
       const commandInput = document.getElementById("commandInput");
+      const argsInput = document.getElementById("argsInput");
       const sendButton = document.getElementById("sendButton");
 
       socket.addEventListener("open", function (event) {
@@ -93,9 +103,18 @@
 
       sendButton.addEventListener("click", function () {
         const command = commandInput.value.trim();
+        const args = argsInput.value.trim();
+
         if (command) {
-          socket.send(command);
-          commandInput.value = "";
+          try {
+            const parsedArgs = args ? JSON.parse(args) : [];
+            const message = JSON.stringify({ command: command, args: parsedArgs });
+            socket.send(message);
+            commandInput.value = "";
+            argsInput.value = "";
+          } catch (e) {
+            alert("Invalid arguments format. Please use valid JSON.");
+          }
         } else {
           alert("Please enter a command");
         }
@@ -103,3 +122,4 @@
     </script>
   </body>
 </html>
+

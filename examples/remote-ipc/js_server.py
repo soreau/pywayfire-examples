@@ -29,7 +29,7 @@ def ip_in_allowed_range(ip):
 
 async def handle_client(websocket, path):
     client_ip = websocket.remote_address[0]
-    
+
     # Check if IP validation is enabled via environment variable
     ip_check_enabled = os.getenv('WAYFIRE_IPC_LAN_ONLY') is not None
 
@@ -39,19 +39,42 @@ async def handle_client(websocket, path):
 
     sock = WayfireSocket()
     async for message in websocket:
-        if hasattr(sock, message):
-            method = getattr(sock, message)
-            if callable(method):
-                try:
-                    result = method()
-                    json_result = json.dumps(result, default=str)
-                    await websocket.send(json_result)
-                except Exception as e:
-                    await websocket.send(json.dumps({"error": str(e)}))
-            else:
-                await websocket.send(json.dumps({"error": f"{message} is not a callable method"}))
-        else:
-            await websocket.send(json.dumps({"error": f"Unknown command: {message}"}))
+        print(f"Received message: {message}")  # Debugging line
+
+        try:
+            # Parse the received message as JSON
+            data = json.loads(message)
+            command = data.get("command")
+            args = data.get("args", [])
+
+            if command is None:
+                await websocket.send(json.dumps({"error": "Command not specified"}))
+                continue
+
+            if not hasattr(sock, command):
+                await websocket.send(json.dumps({"error": f"Unknown command: {command}"}))
+                continue
+
+            method = getattr(sock, command)
+
+            if not callable(method):
+                await websocket.send(json.dumps({"error": f"{command} is not a callable method"}))
+                continue
+
+            # Ensure args are iterable
+            if not isinstance(args, (list, tuple)):
+                args = [args]
+
+            # Call the method with arguments
+            try:
+                result = method(*args)
+                json_result = json.dumps(result, default=str)
+                await websocket.send(json_result)
+            except Exception as e:
+                await websocket.send(json.dumps({"error": str(e)}))
+
+        except json.JSONDecodeError as e:
+            await websocket.send(json.dumps({"error": f"Invalid JSON: {str(e)}"}))
 
 async def main():
     server = await websockets.serve(handle_client, "0.0.0.0", 8787)
@@ -59,3 +82,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
