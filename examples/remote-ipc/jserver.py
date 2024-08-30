@@ -31,7 +31,7 @@ async def handle_client(websocket, path):
     client_ip = websocket.remote_address[0]
     
     # Check if IP validation is enabled via environment variable
-    ip_check_enabled = os.getenv('WF_IP_CHECK', 'false').lower() == 'true'
+    ip_check_enabled = os.getenv('WAYFIRE_IPC_LAN_ONLY') is not None
 
     if ip_check_enabled and not ip_in_allowed_range(client_ip):
         await websocket.close()
