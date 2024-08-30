@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Wayfire Web (IPC)</title>
+    <title>Wayfire Web (Internal Process Commands)</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -39,91 +39,121 @@
     <div class="container mt-5">
       <h1 class="text-center mb-4">Wayfire (IPC)</h1>
       <div class="mb-3">
-        <label for="commandInput" class="form-label">Enter Command:</label>
+        <label id="commandInputLabel" for="commandInput" class="form-label">Enter Command:</label>
         <input
           type="text"
           class="form-control"
           id="commandInput"
+          onkeydown="handle_cmd_key(this)"
           placeholder="e.g., list_views"
         />
       </div>
       <div class="mb-3">
-        <label for="argsInput" class="form-label"
-          >Enter Arguments (JSON format):</label
-        >
+        <label id="connectFailedLabel" class="form-label">Failed to connect to localhost:8787.</br></label>
+        <label id="IpPortLabel" for="IpPortInput" class="form-label">Enter IP and Port:</label>
         <input
           type="text"
           class="form-control"
-          id="argsInput"
-          placeholder='e.g., ["arg1", "arg2"]'
+          id="IpPortInput"
+          placeholder="e.g., 127.0.0.1:8787"
         />
       </div>
       <div class="d-grid gap-2">
-        <button id="sendButton" class="btn btn-primary">Send Command</button>
+        <button id="sendCmdButton" class="btn btn-primary">Send Command</button>
+      </div>
+      <div class="d-grid gap-2">
+        <button id="sendIpPortButton" class="btn btn-primary">Connect</button>
       </div>
       <div id="output" class="mt-4"></div>
     </div>
 
     <script>
-      const socket = new WebSocket("ws://localhost:8787");
       const outputDiv = document.getElementById("output");
       const commandInput = document.getElementById("commandInput");
-      const argsInput = document.getElementById("argsInput");
-      const sendButton = document.getElementById("sendButton");
+      const commandInputLabel = document.getElementById("commandInputLabel");
+      const sendCmdButton = document.getElementById("sendCmdButton");
+      const connectFailedLabel = document.getElementById("connectFailedLabel");
+      const IpPortInput = document.getElementById("IpPortInput");
+      const IpPortLabel = document.getElementById("IpPortLabel");
+      const sendIpPortButton = document.getElementById("sendIpPortButton");
+      var gsocket = ipc_connect("localhost:8787");
 
-      socket.addEventListener("open", function (event) {
-        console.log("Connected to the server");
-      });
-
-      socket.addEventListener("message", function (event) {
-        console.log("Raw message from server:", event.data);
-
-        let data;
-        try {
-          data = JSON.parse(event.data);
-        } catch (e) {
-          console.error("Error parsing JSON:", e.message);
-          outputDiv.innerHTML = `
-          <p class="error">Error parsing message: ${e.message}</p>
-          <pre>${event.data}</pre>
-        `;
-          return;
-        }
-
-        outputDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-      });
-
-      socket.addEventListener("error", function (event) {
-        console.error("WebSocket error:", event);
-        outputDiv.innerHTML = `<p class="error">Error: ${event.message}</p>`;
-      });
-
-      socket.addEventListener("close", function (event) {
-        console.log("WebSocket connection closed");
-        outputDiv.innerHTML = `<p>Connection closed</p>`;
-      });
-
-      sendButton.addEventListener("click", function () {
+      function send_command() {
         const command = commandInput.value.trim();
-        const args = argsInput.value.trim();
-
         if (command) {
-          try {
-            const parsedArgs = args ? JSON.parse(args) : [];
-            const message = JSON.stringify({
-              command: command,
-              args: parsedArgs,
-            });
-            socket.send(message);
-            commandInput.value = "";
-            argsInput.value = "";
-          } catch (e) {
-            alert("Invalid arguments format. Please use valid JSON.");
-          }
+          gsocket.send(command);
+          commandInput.value = "";
         } else {
           alert("Please enter a command");
         }
+      }
+
+      function handle_cmd_key(key) {
+        if(event.key === 'Enter') {
+          send_command();
+        }
+      }
+
+      sendCmdButton.addEventListener("click", function () {
+        send_command();
       });
+
+      function ipc_connect(address) {
+        const socket = new WebSocket("ws://" + address);
+
+        socket.addEventListener("open", function (event) {
+          outputDiv.innerHTML = ``;
+          console.log("Connected to the server");
+          commandInput.style.display = 'block';
+          commandInputLabel.style.display = 'block';
+          sendCmdButton.style.display = 'block';
+          IpPortInput.style.display = 'none';
+          IpPortLabel.style.display = 'none';
+          connectFailedLabel.style.display = 'none';
+          sendIpPortButton.style.display = 'none';
+        });
+
+        socket.addEventListener("message", function (event) {
+          console.log("Raw message from server:", event.data);
+
+          let data;
+          try {
+            data = JSON.parse(event.data);
+          } catch (e) {
+            console.error("Error parsing JSON:", e.message);
+            outputDiv.innerHTML = `
+            <p class="error">Error parsing message: ${e.message}</p>
+            <pre>${event.data}</pre>
+          `;
+            return;
+          }
+
+          outputDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        });
+
+        socket.addEventListener("error", function (event) {
+          console.error("WebSocket error:", event);
+          outputDiv.innerHTML = `<p class="error">Error: ${event.message}</p>`;
+        });
+
+        socket.addEventListener("close", function (event) {
+          console.log("WebSocket connection closed");
+          outputDiv.innerHTML = `<p>Connection closed</p>`;
+          commandInput.style.display = 'none';
+          commandInputLabel.style.display = 'none';
+          sendCmdButton.style.display = 'none';
+          IpPortInput.style.display = 'block';
+          IpPortLabel.style.display = 'block';
+          connectFailedLabel.style.display = 'block';
+          sendIpPortButton.style.display = 'block';
+          sendIpPortButton.addEventListener("click", function () {
+            const address = IpPortInput.value.trim();
+            gsocket = ipc_connect(address);
+          });
+        });
+
+        return socket;
+      }
     </script>
   </body>
 </html>
