@@ -23,13 +23,19 @@
         width: 100%;
         overflow: auto;
       }
+      .grey-text {
+        color: #AAAAAA;
+      }
+      .black-text {
+        color: #000000;
+      }
       .window-info {
         border: 1px solid #ddd;
         padding: 10px;
         margin-bottom: 10px;
         background-color: #fafafa;
       }
-      .form-control, .form-select {
+      .form-control, .form-select, .btn {
         margin-bottom: 20px;
       }
       .error {
@@ -90,12 +96,14 @@
       <div class="d-grid gap-2">
         <button id="sendIpPortButton" class="btn btn-primary">Connect</button>
       </div>
+      <select id="historyInput" class="form-select grey-text" onchange="history_command_selected()"></select>
       <div id="output" class="mt-4"></div>
     </div>
 
     <script>
       const outputDiv = document.getElementById("output");
       const selectInput = document.getElementById("selectInput");
+      const historyInput = document.getElementById("historyInput");
       const arg1Input = document.getElementById("arg1Input");
       const arg2Input = document.getElementById("arg2Input");
       const arg3Input = document.getElementById("arg3Input");
@@ -110,6 +118,14 @@
       var gsocket = ipc_connect("localhost:7777");
       var list_methods = true;
       var arguments = [];
+      var command_history = [];
+      var last_command = "";
+
+      var opt = document.createElement('option');
+      opt.value = "";
+      opt.innerHTML = "History";
+      opt.className = "form-select grey-text";
+      historyInput.appendChild(opt);
 
       function arg_exists(arg) {
         for (var a in window.arguments) {
@@ -118,6 +134,20 @@
           }
         }
         return false;
+      }
+
+      function update_history_class() {
+        historyInput.className = historyInput.options[historyInput.selectedIndex].className;
+        console.log("class name: ", historyInput.className);
+      }
+
+      function history_command_selected() {
+          update_history_class();
+          var command = historyInput.value.trim();
+          if (command)
+          {
+            send_command(command);
+          }
       }
 
       function method_changed() {
@@ -131,7 +161,7 @@
         }
         window.arguments = [];
         outputDiv.innerHTML = "";
-        send_command();
+        send_command("");
       }
 
       function hide_arg_input() {
@@ -156,7 +186,11 @@
         arg5Input.innerHTML = "";
       }
 
-      function send_command() {
+      function send_command(cmd) {
+        if (cmd) {
+          gsocket.send(cmd);
+          return;
+        }
         var args = "";
         if (arg1Input.style.display == 'block') {
           args += " " + arg1Input.value.trim();
@@ -182,6 +216,7 @@
           {
               list_methods = true;
           }
+          last_command = command;
           gsocket.send(command);
         }
       }
@@ -198,6 +233,7 @@
           outputDiv.innerHTML = ``;
           console.log("Connected to the server");
           selectInput.style.display = 'block';
+          historyInput.style.display = 'block';
           sendCmdButton.style.display = 'block';
           IpPortInput.style.display = 'none';
           IpPortLabel.style.display = 'none';
@@ -246,7 +282,15 @@
             }
           } else if (data.error == "'method'") {
             setTimeout(() => alert("Call failed. Perhaps the plugin that provides the method is not loaded?"), 50);
+          } else if (last_command) {
+            var opt = document.createElement('option');
+            opt.value = last_command;
+            opt.innerHTML = last_command;
+            opt.className = "form-select black-text";
+            historyInput.appendChild(opt);
           }
+
+          last_command = "";
 
           if (list_methods) {
             var message = [];
@@ -288,6 +332,7 @@
           hide_arg_input();
           clear_args();
           selectInput.style.display = 'none';
+          historyInput.style.display = 'none';
           sendCmdButton.style.display = 'none';
           IpPortInput.style.display = 'block';
           IpPortLabel.style.display = 'block';
