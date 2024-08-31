@@ -1,7 +1,16 @@
-# pywayfire_examples
+# pywayfire-ipc-remote
 
-examples for python wayfire module usage
+## Requirements
 
-all scripts require:
+`pip install wayfire`
 
-pip install wayfire
+Enable ipc and ipc-rules plugins
+
+## Usage
+
+Start the server where wayfire is running:
+
+`python js_erver.py`
+
+Start the client by opening `ipc.html` in a browser.
+Running `ipc.html` from a remote machine is supported.
