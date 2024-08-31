@@ -43,12 +43,6 @@
       <h1 class="text-center mb-4">Wayfire (IPC)</h1>
       <div class="form-group mb-3">
         <select id="selectInput" class="form-select" onchange="method_changed()"></select>
-        <input
-          type="text"
-          class="form-control mb-3"
-          id="argInput"
-          placeholder="<optional method arguments>"
-        />
         <label id="arg1Label" for="arg1Input" class="form-label"></label>
         <input
           type="text"
@@ -102,7 +96,6 @@
     <script>
       const outputDiv = document.getElementById("output");
       const selectInput = document.getElementById("selectInput");
-      const argInput = document.getElementById("argInput");
       const arg1Input = document.getElementById("arg1Input");
       const arg2Input = document.getElementById("arg2Input");
       const arg3Input = document.getElementById("arg3Input");
@@ -138,7 +131,6 @@
         }
         window.arguments = [];
         outputDiv.innerHTML = "";
-        argInput.style.display = 'block';
         send_command();
       }
 
@@ -152,13 +144,11 @@
       }
 
       function clear_args() {
-        argInput.value = "";
         arg1Input.value = "";
         arg2Input.value = "";
         arg3Input.value = "";
         arg4Input.value = "";
         arg5Input.value = "";
-        argInput.innerHTML = "";
         arg1Input.innerHTML = "";
         arg2Input.innerHTML = "";
         arg3Input.innerHTML = "";
@@ -167,7 +157,7 @@
       }
 
       function send_command() {
-        var args = argInput.value.trim();
+        var args = "";
         if (arg1Input.style.display == 'block') {
           args += " " + arg1Input.value.trim();
         }
@@ -208,7 +198,6 @@
           outputDiv.innerHTML = ``;
           console.log("Connected to the server");
           selectInput.style.display = 'block';
-          argInput.style.display = 'block';
           sendCmdButton.style.display = 'block';
           IpPortInput.style.display = 'none';
           IpPortLabel.style.display = 'none';
@@ -234,7 +223,6 @@
           }
 
           if (data.error && data.error != "'method'") {
-            argInput.style.display = 'none';
             arg_haystack = data.error;
             arg_haystack = arg_haystack.substring(arg_haystack.indexOf(" missing ") + 9);
             arg_count = parseInt(arg_haystack.slice(0, 1));
@@ -298,7 +286,6 @@
           console.log("WebSocket connection closed");
           outputDiv.innerHTML = `<p>Connection closed</p>`;
           selectInput.style.display = 'none';
-          argInput.style.display = 'none';
           sendCmdButton.style.display = 'none';
           IpPortInput.style.display = 'block';
           IpPortLabel.style.display = 'block';
