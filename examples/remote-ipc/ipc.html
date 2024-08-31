@@ -29,6 +29,9 @@
         margin-bottom: 10px;
         background-color: #fafafa;
       }
+      .form-control, .form-select {
+        margin-bottom: 20px;
+      }
       .error {
         color: red;
         font-weight: bold;
@@ -38,22 +41,21 @@
   <body>
     <div class="container mt-5">
       <h1 class="text-center mb-4">Wayfire (IPC)</h1>
-      <div class="mb-3">
-        <label id="commandInputLabel" for="commandInput" class="form-label">Enter Command:</label>
+      <div class="form-group mb-3">
+        <select id="selectInput" class="form-select"></select>
         <input
           type="text"
-          class="form-control"
-          id="commandInput"
-          onkeydown="handle_cmd_key(this)"
-          placeholder="e.g., list_views"
+          class="form-control mb-3"
+          id="argInput"
+          placeholder="<optional method arguments>"
         />
       </div>
-      <div class="mb-3">
-        <label id="connectFailedLabel" class="form-label">Failed to connect to localhost:8787.</br></label>
+      <div class="form-group mb-3">
+        <label id="connectFailedLabel" class="error form-label">Failed to connect to server address.</br></label>
         <label id="IpPortLabel" for="IpPortInput" class="form-label">Enter IP and Port:</label>
         <input
           type="text"
-          class="form-control"
+          class="form-control mb-3"
           id="IpPortInput"
           placeholder="e.g., 127.0.0.1:8787"
         />
@@ -69,28 +71,31 @@
 
     <script>
       const outputDiv = document.getElementById("output");
-      const commandInput = document.getElementById("commandInput");
-      const commandInputLabel = document.getElementById("commandInputLabel");
+      const selectInput = document.getElementById("selectInput");
+      const argInput = document.getElementById("argInput");
       const sendCmdButton = document.getElementById("sendCmdButton");
       const connectFailedLabel = document.getElementById("connectFailedLabel");
       const IpPortInput = document.getElementById("IpPortInput");
       const IpPortLabel = document.getElementById("IpPortLabel");
       const sendIpPortButton = document.getElementById("sendIpPortButton");
       var gsocket = ipc_connect("localhost:8787");
+      var list_methods = true;
 
       function send_command() {
-        const command = commandInput.value.trim();
+        const args = argInput.value.trim();
+        var command = selectInput.value.trim();
+        if (args) {
+           console.log("appending args: \"" + args + "\"");
+           command += " " + args;
+        }
         if (command) {
+          if (command == "list_methods")
+          {
+              list_methods = true;
+          }
           gsocket.send(command);
-          commandInput.value = "";
         } else {
           alert("Please enter a command");
-        }
-      }
-
-      function handle_cmd_key(key) {
-        if(event.key === 'Enter') {
-          send_command();
         }
       }
 
@@ -104,13 +109,14 @@
         socket.addEventListener("open", function (event) {
           outputDiv.innerHTML = ``;
           console.log("Connected to the server");
-          commandInput.style.display = 'block';
-          commandInputLabel.style.display = 'block';
+          selectInput.style.display = 'block';
+          argInput.style.display = 'block';
           sendCmdButton.style.display = 'block';
           IpPortInput.style.display = 'none';
           IpPortLabel.style.display = 'none';
           connectFailedLabel.style.display = 'none';
           sendIpPortButton.style.display = 'none';
+          socket.send("list_methods");
         });
 
         socket.addEventListener("message", function (event) {
@@ -128,6 +134,32 @@
             return;
           }
 
+          if (list_methods) {
+            var message = [];
+            while (selectInput.options.length > 0) {
+              selectInput.remove(0);
+            }
+            var opt = document.createElement('option');
+            opt.value = "";
+            opt.innerHTML = "Please select method";
+            selectInput.appendChild(opt);
+            for (var key in data) {
+              var cmd = data[key].split("/").pop();
+              if (cmd[0] == "_" && cmd[1] == "_") {
+                continue;
+              }
+              console.log(cmd);
+              opt = document.createElement('option');
+              opt.value = cmd;
+              opt.innerHTML = cmd;
+              selectInput.appendChild(opt);
+              message.push(cmd);
+            }
+            list_methods = false;
+            outputDiv.innerHTML = `<pre>${message.join().replaceAll(",", "\n")}</pre>`;
+            return;
+	  }
+
           outputDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
         });
 
@@ -139,8 +171,8 @@
         socket.addEventListener("close", function (event) {
           console.log("WebSocket connection closed");
           outputDiv.innerHTML = `<p>Connection closed</p>`;
-          commandInput.style.display = 'none';
-          commandInputLabel.style.display = 'none';
+          selectInput.style.display = 'none';
+          argInput.style.display = 'none';
           sendCmdButton.style.display = 'none';
           IpPortInput.style.display = 'block';
           IpPortLabel.style.display = 'block';

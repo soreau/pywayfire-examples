@@ -59,6 +59,11 @@ async def handle_client(websocket, path):
 
     async for message in websocket:
         command = message.split()[0]
+        if command == "list_methods":
+            result = dir(sock) + dir(wpe)
+            json_result = json.dumps(result, default=str)
+            await websocket.send(json_result)
+            continue
         try:
             args = message.split(' ', 1)[1]
             args = args.split()
@@ -75,7 +80,7 @@ async def handle_client(websocket, path):
                 except Exception as e:
                     await websocket.send(json.dumps({"error": str(e)}))
             else:
-                await websocket.send(json.dumps({"error": f"{message} is not a callable method"}))
+                await websocket.send(json.dumps({"error": f"{command} is not a callable method"}))
         elif hasattr(wpe, command):
             method = getattr(wpe, command)
             if callable(method):
@@ -86,7 +91,7 @@ async def handle_client(websocket, path):
                 except Exception as e:
                     await websocket.send(json.dumps({"error": str(e)}))
             else:
-                await websocket.send(json.dumps({"error": f"{message} is not a callable method"}))
+                await websocket.send(json.dumps({"error": f"{command} is not a callable method"}))
         else:
             await websocket.send(json.dumps({"error": f"Unknown command: {message}"}))
 
