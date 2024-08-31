@@ -28,20 +28,47 @@ ALLOWED_IP_RANGES = [
 def ip_in_allowed_range(ip):
     return any(ipaddress.ip_address(ip) in ipaddress.ip_network(range) for range in ALLOWED_IP_RANGES)
 
+def type_convert(value: str):
+    def is_int(val):
+        try:
+            int(val)
+            return True
+        except ValueError:
+            return False
+
+    def is_float(val):
+        try:
+            float(val)
+            return True
+        except ValueError:
+            return False
+
+    def is_bool(val):
+        return val.lower() in ['true', 'false']
+
+    if is_int(value):
+        return int(value)
+    elif is_float(value):
+        return float(value)
+    elif is_bool(value):
+        return value.lower() == 'true'
+    else:
+        return value
+
 def call_method(method, args):
     num_args = len(args)
     if num_args == 0:
         result = method()
     elif num_args == 1:
-        result = method(args[0])
+        result = method(type_convert(args[0]))
     elif num_args == 2:
-        result = method(args[0], args[1])
+        result = method(type_convert(args[0]), type_convert(args[1]))
     elif num_args == 3:
-        result = method(args[0], args[1], args[2])
+        result = method(type_convert(args[0]), type_convert(args[1]), type_convert(args[2]))
     elif num_args == 4:
-        result = method(args[0], args[1], args[2], args[3])
+        result = method(type_convert(args[0]), type_convert(args[1]), type_convert(args[2]), type_convert(args[3]))
     elif num_args == 5:
-        result = method(args[0], args[1], args[2], args[3], args[4])
+        result = method(type_convert(args[0]), type_convert(args[1]), type_convert(args[2]), type_convert(args[3]), type_convert(args[4]))
     return result
 
 async def handle_client(websocket, path):

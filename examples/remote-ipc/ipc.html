@@ -126,6 +126,21 @@
         }
       }
 
+      function clear_args() {
+        argInput.value = "";
+        arg1Input.value = "";
+        arg2Input.value = "";
+        arg3Input.value = "";
+        arg4Input.value = "";
+        arg5Input.value = "";
+        argInput.innerHTML = "";
+        arg1Input.innerHTML = "";
+        arg2Input.innerHTML = "";
+        arg3Input.innerHTML = "";
+        arg4Input.innerHTML = "";
+        arg5Input.innerHTML = "";
+      }
+
       function send_command() {
         var args = argInput.value.trim();
         if (arg1Input.style.display == 'block') {
@@ -174,6 +189,7 @@
           IpPortLabel.style.display = 'none';
           connectFailedLabel.style.display = 'none';
           sendIpPortButton.style.display = 'none';
+          clear_args();
           socket.send("list_methods");
         });
 
