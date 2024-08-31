@@ -136,6 +136,15 @@
         return false;
       }
 
+      function child_exists(elem, text) {
+        for (var c in elem.children) {
+          if (elem.children[c].innerHTML == text) {
+            return true;
+          }
+        }
+        return false;
+      }
+
       function update_history_class() {
         historyInput.className = historyInput.options[historyInput.selectedIndex].className;
       }
@@ -281,7 +290,7 @@
             }
           } else if (data.error == "'method'") {
             setTimeout(() => alert("Call failed. Perhaps the plugin that provides the method is not loaded?"), 50);
-          } else if (last_command) {
+          } else if (last_command && !child_exists(historyInput, last_command)) {
             var opt = document.createElement('option');
             opt.value = last_command;
             opt.innerHTML = last_command;
