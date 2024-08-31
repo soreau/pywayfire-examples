@@ -67,20 +67,7 @@ def type_convert(value: str):
         return value
 
 def call_method(method, args):
-    num_args = len(args)
-    if num_args == 0:
-        result = method()
-    elif num_args == 1:
-        result = method(type_convert(args[0]))
-    elif num_args == 2:
-        result = method(type_convert(args[0]), type_convert(args[1]))
-    elif num_args == 3:
-        result = method(type_convert(args[0]), type_convert(args[1]), type_convert(args[2]))
-    elif num_args == 4:
-        result = method(type_convert(args[0]), type_convert(args[1]), type_convert(args[2]), type_convert(args[3]))
-    elif num_args == 5:
-        result = method(type_convert(args[0]), type_convert(args[1]), type_convert(args[2]), type_convert(args[3]), type_convert(args[4]))
-    return result
+    return method(*[type_convert(arg) for arg in args])
 
 async def handle_client(websocket, path):
     client_ip = websocket.remote_address[0]
