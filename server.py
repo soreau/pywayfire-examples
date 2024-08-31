@@ -6,7 +6,16 @@ from wayfire.extra.wpe import WPE
 import socket
 import struct
 import ipaddress
+import sys
 import os
+
+port = 7777
+
+if len(sys.argv) > 1:
+    if sys.argv[1] == "--help":
+        print(f"Usage: {sys.argv[0]} [port]")
+        exit(0)
+    port = int(sys.argv[1])
 
 def get_local_network_range():
     hostname = socket.gethostname()
@@ -123,7 +132,7 @@ async def handle_client(websocket, path):
             await websocket.send(json.dumps({"error": f"Unknown command: {message}"}))
 
 async def main():
-    server = await websockets.serve(handle_client, "0.0.0.0", 8787)
+    server = await websockets.serve(handle_client, "0.0.0.0", port)
     await server.wait_closed()
 
 if __name__ == "__main__":

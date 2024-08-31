@@ -81,7 +81,7 @@
           type="text"
           class="form-control mb-3"
           id="IpPortInput"
-          placeholder="e.g., 127.0.0.1:8787"
+          placeholder="e.g., 127.0.0.1:7777"
         />
       </div>
       <div class="d-grid gap-2">
@@ -107,7 +107,7 @@
       const IpPortLabel = document.getElementById("IpPortLabel");
       const sendIpPortButton = document.getElementById("sendIpPortButton");
       hide_arg_input();
-      var gsocket = ipc_connect("localhost:8787");
+      var gsocket = ipc_connect("localhost:7777");
       var list_methods = true;
       var arguments = [];
 
