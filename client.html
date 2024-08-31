@@ -285,6 +285,8 @@
         socket.addEventListener("close", function (event) {
           console.log("WebSocket connection closed");
           outputDiv.innerHTML = `<p>Connection closed</p>`;
+          hide_arg_input();
+          clear_args();
           selectInput.style.display = 'none';
           sendCmdButton.style.display = 'none';
           IpPortInput.style.display = 'block';
