@@ -10,7 +10,7 @@ Enable ipc and ipc-rules plugins
 
 Start the server where wayfire is running:
 
-`python server.py [port]`
+`./server.py [port]`
 
 The default port is 7777.
 
