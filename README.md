@@ -10,7 +10,7 @@ Enable ipc and ipc-rules plugins
 
 Start the server where wayfire is running:
 
-`python js_erver.py`
+`python server.py`
 
 Start the client by opening `ipc.html` in a browser.
 Running `ipc.html` from a remote machine is supported.
