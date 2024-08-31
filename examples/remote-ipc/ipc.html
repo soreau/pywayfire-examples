@@ -116,7 +116,6 @@
       hide_arg_input();
       var gsocket = ipc_connect("localhost:8787");
       var list_methods = true;
-      var arguments = [];
 
       function hide_arg_input() {
         for (var i = 0; i < 5; i++) {
@@ -193,12 +192,12 @@
             return;
           }
 
-          if (data.error) {
+          if (data.error && data.error != "'method'") {
             argInput.style.display = 'none';
             arg_haystack = data.error;
             arg_haystack = arg_haystack.substring(arg_haystack.indexOf(" missing ") + 9);
             arg_count = parseInt(arg_haystack.slice(0, 1));
-            arguments = [];
+            var arguments = [];
             arg_hs = arg_haystack;
             for (var i = 0; i < arg_count; i++) {
               var arg = arg_hs = arg_hs.substring(arg_hs.indexOf("'") + 1);
@@ -206,10 +205,10 @@
               arg_hs = arg_hs.substring(arg_hs.indexOf("'") + 1);
               arguments.push(arg);
 	    }
-	    var i = 0;
+	    var i = 1;
 	    for (var arg in arguments) {
-              const argElem = document.getElementById("arg" + (i + 1) + "Input");
-              const argLabel = document.getElementById("arg" + (i + 1) + "Label");
+              const argElem = document.getElementById("arg" + i + "Input");
+              const argLabel = document.getElementById("arg" + i + "Label");
               if (argLabel.innerHTML != arguments[arg].charAt(0).toUpperCase() + arguments[arg].slice(1)) {
                   argElem.value = "";
               }
@@ -218,6 +217,8 @@
               argElem.style.display = 'block';
               i++;
             }
+          } else if (data.error == "'method'") {
+            setTimeout(() => alert("Call failed. Perhaps the plugin that provides the method is not loaded?"), 50);
           }
 
           if (list_methods) {
