@@ -73,7 +73,7 @@ def call_method(method, args):
 
 async def handle_client(websocket, path):
     client_ip = websocket.remote_address[0]
-    
+
     # Check if IP validation is enabled via environment variable
     ip_check_enabled = os.getenv('WAYFIRE_IPC_LAN_ONLY') is not None
 
