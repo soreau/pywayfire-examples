@@ -317,7 +317,13 @@
             return;
 	  }
 
-          outputDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+	  json_str = JSON.stringify(data, null, 2);
+	  json_str = json_str.replaceAll("\"output-name\"", "<span style=\"color:blue;\">\"output-name\"</span>");
+	  json_str = json_str.replaceAll("\"app-id\"", "<span style=\"color:green;\">\"app-id\"</span>");
+	  json_str = json_str.replaceAll("\"name\"", "<span style=\"color:cyan;\">\"name\"</span>");
+	  json_str = json_str.replaceAll("\"id\"", "<span style=\"color:red;\">\"id\"</span>");
+
+          outputDiv.innerHTML = `<pre>${json_str}</pre>`;
         });
 
         socket.addEventListener("error", function (event) {
