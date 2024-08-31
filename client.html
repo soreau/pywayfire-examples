@@ -126,6 +126,7 @@
       opt.innerHTML = "History";
       opt.className = "form-select grey-text";
       historyInput.appendChild(opt);
+      historyInput.style.display = 'none';
 
       function arg_exists(arg) {
         for (var a in window.arguments) {
@@ -241,7 +242,6 @@
           outputDiv.innerHTML = ``;
           console.log("Connected to the server");
           selectInput.style.display = 'block';
-          historyInput.style.display = 'block';
           sendCmdButton.style.display = 'block';
           IpPortInput.style.display = 'none';
           IpPortLabel.style.display = 'none';
@@ -296,6 +296,7 @@
             opt.innerHTML = last_command;
             opt.className = "form-select black-text";
             historyInput.appendChild(opt);
+            historyInput.style.display = 'block';
           }
 
           last_command = "";
