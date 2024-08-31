@@ -130,9 +130,15 @@
       function method_changed() {
         for (var i = 0; i < 5; i++) {
           const argElem = document.getElementById("arg" + (i + 1) + "Input");
+          const argLabel = document.getElementById("arg" + (i + 1) + "Label");
           argElem.value = "";
+          argLabel.value = "";
+          argLabel.style.display = 'none';
+          argElem.style.display = 'none';
         }
         window.arguments = [];
+        outputDiv.innerHTML = "";
+        argInput.style.display = 'block';
       }
 
       function hide_arg_input() {
